@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 function Pi() {
-	var type = 6;
+	var type = 5;
 	this.digits = 1000;
 	BigNumber.config(this.digits, 4);
 	if (type == 1) {
@@ -159,27 +159,41 @@ function Ramanujan2() {
 	this.b = BigNumber(396);
 	this.nums = [BigNumber(1103)];
 	this.dens = [BigNumber(1)];
+	this.MODE_COMPUTING = 0;
+	this.MODE_EXPANDING = 1;
+	this.mode = this.MODE_COMPUTING;
+	this.pi = BigNumber(0);
 };
 
 Ramanujan2.prototype.iterate = function() {
-	this.i += 1;
-	var k = this.i;
-	if (k % 10 == 1)
-		BigNumber.config(k * 10 + 20, 4);
-	this.fact4k = this.fact4k.times(4 * k).times(4 * k - 1).times(4 * k - 2).times(4 * k - 3);
-	this.factk = this.factk.times(k);
-	this.nums.push(this.fact4k.times(this.a.times(k).plus(1103)));
-	this.dens.push(this.factk.times(this.factk).times(this.factk).times(this.factk).
-		times(this.b.pow(4 * k)));
-	if (k % 10 == 1) {
-		this.sum = BigNumber(0);
-		for (var i = 0; i < this.nums.length; i++)
-			this.sum = this.sum.plus(this.nums[i].div(this.dens[i]));
-		this.c = BigNumber(2).times(BigNumber(2).sqrt()).div(9801);
+	if (this.mode == this.MODE_COMPUTING) {
+		this.i += 1;
+		var k = this.i;
+		this.fact4k = this.fact4k.times(4 * k).times(4 * k - 1).times(4 * k - 2).times(4 * k - 3);
+		this.factk = this.factk.times(k);
+		this.nums.push(this.fact4k.times(this.a.times(k).plus(1103)));
+		this.dens.push(this.factk.times(this.factk).times(this.factk).times(this.factk).
+			times(this.b.pow(4 * k)));
+		if (k % 50 == 1) {
+			BigNumber.config(k * 9 + 500, 4);
+			this.sum = BigNumber(0);
+			this.c = BigNumber(2).times(BigNumber(2).sqrt()).div(9801);
+			this.mode = this.MODE_EXPANDING;
+			this.loop_i = 0;
+		} else {
+			this.sum = this.sum.plus(this.nums[k].div(this.dens[k]));
+			this.pi = this.one.div(this.c.times(this.sum));
+		}
 	} else {
-		this.sum = this.sum.plus(this.nums[k].div(this.dens[k]));
+		var i = this.loop_i;
+		if (i < this.nums.length) {
+			this.sum = this.sum.plus(this.nums[i].div(this.dens[i]));
+			this.pi = this.pi.plus(BigNumber(i).div(BigNumber(10).pow((this.i - 50) * 9 + 500)));
+			this.loop_i++;
+		} else {
+			this.mode = this.MODE_COMPUTING;
+		}
 	}
-	this.pi = this.one.div(this.c.times(this.sum));
 };
 
 // ------------------------------------
