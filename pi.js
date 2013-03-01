@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 function Pi() {
-	var type = 5;
+	var type = 6;
 	this.digits = 1000;
 	BigNumber.config(this.digits, 4);
 	if (type == 1) {
@@ -45,6 +45,9 @@ function Pi() {
 	}
 	else if (type == 5) {
 		this.algo = new Ramanujan2();
+	}
+	else if (type == 6) {
+		this.algo = new BBP();
 	}
 	var _this = this;
 	setTimeout(function(){_this.iterate();}, 1);
@@ -179,3 +182,68 @@ Ramanujan2.prototype.iterate = function() {
 	this.pi = this.one.div(this.c.times(this.sum));
 };
 
+// ------------------------------------
+
+// http://en.wikipedia.org/wiki/Bailey-Borwein-Plouffe_formula
+
+function BBP() {
+	this.i = 0;
+	this.piA = [];
+	this.sixteen = BigNumber(16);
+	this.pi = BigNumber(3);
+};
+
+BBP.prototype.powmod = function(b, e, m) {
+	var c = 1;
+	for (var i = 0; i < e; i++)
+	{
+		c = (c * b) % m;
+	}
+	return c;
+};
+
+BBP.prototype.sum = function(j) {
+	var n = this.i;
+	var s1 = 0;
+	for (var k = 0; k <= n; k++)
+	{
+		var de = 8 * k + j;
+		var nu = this.powmod(16, n - k, de);
+		s1 += nu / de;
+	}
+	for (var k = n + 1; k <= n + 5; k++)
+	{
+		var nu = Math.pow(16, n - k);
+		var de = 8 * k + j;
+		s1 += nu / de;
+	}
+	return s1;
+};
+
+BBP.prototype.toDecimal = function() {
+	BigNumber.config(this.i + 5, 4);
+	var pi = BigNumber(3);
+	for (var i = 0; i <= this.i; i++) {
+		pi = pi.plus(BigNumber(this.piA[i]).times(this.sixteen.pow(-i - 1)));
+	}
+	return pi;
+};
+
+// Can't do incremental hex-to-dec ?
+/*
+BBP.prototype.toDecimal = function() {
+	BigNumber.config(4 * this.i + 20, 4);
+	var i = this.i;
+	this.pi = this.pi.plus(BigNumber(this.piA[i]).times(this.sixteen.pow(-i - 1)));
+	return this.pi;
+};
+*/
+
+BBP.prototype.iterate = function() {
+	var s = 4 * this.sum(1) - 2 * this.sum(4) - this.sum(5) - this.sum(6);
+	var frac = s - Math.floor(s);
+	var val = Math.floor(frac * 16);
+	this.piA.push(val);
+	this.pi = this.toDecimal();
+	this.i += 1;
+};
