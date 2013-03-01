@@ -27,7 +27,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-function Pi(type) {
+function Pi() {
+	var type = 5;
 	this.digits = 1000;
 	BigNumber.config(this.digits, 4);
 	if (type == 1) {
@@ -42,13 +43,16 @@ function Pi(type) {
 	else if (type == 4) {
 		this.algo = new Ramanujan();
 	}
+	else if (type == 5) {
+		this.algo = new Ramanujan2();
+	}
 	var _this = this;
 	setTimeout(function(){_this.iterate();}, 1);
 }
 
 Pi.prototype.iterate = function() {
 	this.algo.iterate();
-	document.getElementById("pi").innerHTML = this.algo.pi.toFixed(this.digits);
+	document.getElementById("pi").innerHTML = this.algo.pi.toString();
 	document.getElementById("iteration").innerHTML = this.algo.i.toString();
 	var _this = this;
 	setTimeout(function(){_this.iterate();}, 1);
@@ -131,7 +135,7 @@ function Ramanujan() {
 Ramanujan.prototype.iterate = function() {
 	this.i += 1;
 	var k = this.i;
-	this.fact4k = this.fact4k.times(4 * k).times(4 * k - 1).times(4 * k - 2);
+	this.fact4k = this.fact4k.times(4 * k).times(4 * k - 1).times(4 * k - 2).times(4 * k - 3);
 	this.factk = this.factk.times(k);
 	var num = this.fact4k.times(this.a.times(k).plus(1103));
 	var den = this.factk.times(this.factk).times(this.factk).times(this.factk).
@@ -139,3 +143,39 @@ Ramanujan.prototype.iterate = function() {
 	this.sum = this.sum.plus(num.div(den));
 	this.pi = this.one.div(this.c.times(this.sum));	
 };
+
+// ------------------------------------
+
+function Ramanujan2() {
+	this.i = 0;
+	BigNumber.config(100, 4);
+	this.one = BigNumber(1);
+	this.fact4k = BigNumber(1);
+	this.factk = BigNumber(1);
+	this.a = BigNumber(26390);
+	this.b = BigNumber(396);
+	this.nums = [BigNumber(1103)];
+	this.dens = [BigNumber(1)];
+};
+
+Ramanujan2.prototype.iterate = function() {
+	this.i += 1;
+	var k = this.i;
+	if (k % 10 == 1)
+		BigNumber.config(k * 10 + 20, 4);
+	this.fact4k = this.fact4k.times(4 * k).times(4 * k - 1).times(4 * k - 2).times(4 * k - 3);
+	this.factk = this.factk.times(k);
+	this.nums.push(this.fact4k.times(this.a.times(k).plus(1103)));
+	this.dens.push(this.factk.times(this.factk).times(this.factk).times(this.factk).
+		times(this.b.pow(4 * k)));
+	if (k % 10 == 1) {
+		this.sum = BigNumber(0);
+		for (var i = 0; i < this.nums.length; i++)
+			this.sum = this.sum.plus(this.nums[i].div(this.dens[i]));
+		this.c = BigNumber(2).times(BigNumber(2).sqrt()).div(9801);
+	} else {
+		this.sum = this.sum.plus(this.nums[k].div(this.dens[k]));
+	}
+	this.pi = this.one.div(this.c.times(this.sum));
+};
+
