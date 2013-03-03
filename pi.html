@@ -28,10 +28,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
 <html><head>
-<script src='bignumber.js'></script>
-<script src='pi.js'></script>
-</head><body onload='var pi = new Pi();' style="margin: 50px 100px; overflow-y: scroll;">
-<div id="pi" style="word-wrap: break-word; font-size:32px;">0</div>
-<p>
-<div id="iteration">0</div>
+    <script src='bignumber.js'></script>
+    <script src='dat.gui.min.js'></script>
+    <script src='pi.js'></script>
+    <style type="text/css">
+        .body { margin: 120px 120px; overflow-y: scroll;
+            height:100%;
+            background:url(pi.png) no-repeat fixed center center; }
+        .pi { word-wrap: break-word; font-size: 32px; }
+        .status { position: absolute; top: 5px; right: 240px; width: 140px; color: #a0a0a0;}
+        .label { float: left; width: 75px; }
+    </style>
+</head><body onload='var pi = new Pi();' class="body">
+    <div id="pi" class="pi">0</div>
+    <p>
+    <div class="status">
+        <div class="label">iterations:</div>
+        <div id="iteration">0</div>
+        <div class="label">digits:</div>
+        <div id="digits">0</div>
+    </div>
 </body></html>

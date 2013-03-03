@@ -28,38 +28,126 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 function Pi() {
-	var type = 5;
-	this.digits = 1000;
-	BigNumber.config(this.digits, 4);
-	if (type == 1) {
-		this.algo = new GregoryLeibnitz();
-	}
-	else if (type == 2) {
-		this.algo = new Nilakantha();
-	}
-	else if (type == 3) {
-		this.algo = new GaussLegendre();
-	}
-	else if (type == 4) {
-		this.algo = new Ramanujan();
-	}
-	else if (type == 5) {
-		this.algo = new Ramanujan2();
-	}
-	else if (type == 6) {
-		this.algo = new BBP();
-	}
+    this.algorithms = [
+        "Gregory-Leibnitz",
+        "Nilakantha",
+        "Gauss-Legendre",
+        "Ramanujan",
+        //"Progr. Ramanujan",
+        //"BPP"
+        ];
+    this.maxs =[
+        2000,
+        2000,
+        500,
+        1000,
+        //1000,
+        //1000
+        ];
+    this.algorithm = this.algorithms[1];
+    this.prevPi = "";
+    this.setDigits(1000);
+    this.initDat(this.maxs[1]);
 	var _this = this;
 	setTimeout(function(){_this.iterate();}, 1);
 }
 
 Pi.prototype.iterate = function() {
 	this.algo.iterate();
+    var digitsFound = this.computeDigitsFound();
 	document.getElementById("pi").innerHTML = this.algo.pi.toString();
 	document.getElementById("iteration").innerHTML = this.algo.i.toString();
+    document.getElementById("digits").innerHTML = digitsFound;
+    this.prevPi = this.algo.pi.toString();
 	var _this = this;
 	setTimeout(function(){_this.iterate();}, 1);
 };
+
+Pi.prototype.findString = function(arr, str) {
+    var i = 0;
+    for (val in arr) {
+        if (arr[val] == str)
+            return i;
+        i++;
+    }
+    return -1;
+}
+
+Pi.prototype.initDat = function(max) {
+    var _this = this;
+    this.max = max;
+    this.gui = new dat.GUI();
+    this.addDigitsController(max);
+    this.gui.add(this, "algorithm", this.algorithms)
+    .onChange(function(value) {
+              _this.setAlgo();
+              });
+};
+
+Pi.prototype.addDigitsController = function(max) {
+    var _this = this;
+    this.digitsController = this.gui.add(this, "digits", 200, max)
+        .onChange(function(value) {
+                  if (value > max)
+                      value = max;
+                  _this.setDigits(value);
+                  });
+}
+
+Pi.prototype.setAlgo = function() {
+    var type = this.findString(this.algorithms, this.algorithm);
+    this.setMax(this.maxs[type]);
+	if (type == 0) {
+		this.algo = new GregoryLeibnitz();
+	}
+	else if (type == 1) {
+		this.algo = new Nilakantha();
+	}
+	else if (type == 2) {
+		this.algo = new GaussLegendre();
+	}
+	else if (type == 3) {
+		this.algo = new Ramanujan();
+	}
+	else if (type == 4) {
+		this.algo = new Ramanujan2();
+	}
+	else if (type == 5) {
+		this.algo = new BBP();
+	}
+}
+
+Pi.prototype.setDigits = function(digits) {
+    this.digits = Math.floor(digits);
+    BigNumber.config(this.digits, 4);
+    this.setAlgo();
+}
+
+Pi.prototype.setMax = function(max) {
+    if (this.digits > max)
+    {
+        this.setDigits(max);
+        this.digitsController.updateDisplay();
+    }
+    this.max = max;
+}
+
+Pi.prototype.clampZero = function(a) {
+    return a > 0 ? a : 0;
+}
+
+Pi.prototype.computeDigitsFound = function() {
+    var p = this.algo.pi.toString();
+    var pp = this.prevPi;
+    var len = p.length < pp.length ? p.length : pp.length;
+    for (var i = 0; i < len; i++) {
+        if (p.charAt(i) != pp.charAt(i))
+            return this.clampZero(i - 1);
+    }
+    return this.clampZero(len - 1);
+}
+
+
 
 // ------------------------------------
 
@@ -149,6 +237,8 @@ Ramanujan.prototype.iterate = function() {
 
 // ------------------------------------
 
+// Not used
+
 function Ramanujan2() {
 	this.i = 0;
 	BigNumber.config(100, 4);
@@ -174,7 +264,7 @@ Ramanujan2.prototype.iterate = function() {
 		this.nums.push(this.fact4k.times(this.a.times(k).plus(1103)));
 		this.dens.push(this.factk.times(this.factk).times(this.factk).times(this.factk).
 			times(this.b.pow(4 * k)));
-		if (k % 50 == 1) {
+		if (k % 50 == 1 && k * 9 + 500 < 1200) {
 			BigNumber.config(k * 9 + 500, 4);
 			this.sum = BigNumber(0);
 			this.c = BigNumber(2).times(BigNumber(2).sqrt()).div(9801);
@@ -199,6 +289,8 @@ Ramanujan2.prototype.iterate = function() {
 // ------------------------------------
 
 // http://en.wikipedia.org/wiki/Bailey-Borwein-Plouffe_formula
+
+// Not used
 
 function BBP() {
 	this.i = 0;
@@ -259,5 +351,6 @@ BBP.prototype.iterate = function() {
 	var val = Math.floor(frac * 16);
 	this.piA.push(val);
 	this.pi = this.toDecimal();
-	this.i += 1;
+    if (this.i < 1200)
+        this.i += 1;
 };
