@@ -33,13 +33,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script src='pi.js'></script>
     <style type="text/css">
         .body { margin: 120px 120px; overflow-y: scroll;
-            height:100%;
-            background:url(pi.png) no-repeat fixed center center; }
-        .pi { word-wrap: break-word; font-size: 32px; }
-        .status { position: absolute; top: 5px; right: 240px; width: 140px; color: #a0a0a0;}
+            height:100%; background:url(pi.png) no-repeat fixed center center;
+            font-family: sans-serif; font-size: 12px; }
+        .pi { word-wrap: break-word; font-size: 32px; font-family: serif;}
+        .status { position: absolute; top: 5px; right: 240px; width: 140px; color: #909090; }
         .label { float: left; width: 75px; }
+        .links { position: absolute; top: 10px; left: 120px; color: #909090; }
+        #links a:link,
+        #links a:visited,
+        #links a:hover,
+        #links a:active { color: #909090; }
     </style>
 </head><body onload='var pi = new Pi();' class="body">
+    <div class="links" id="links"><a href="http://github.com/Eduardop/pi">http://github.com/Eduardop/pi</a></div>
     <div id="pi" class="pi">0</div>
     <p>
     <div class="status">
